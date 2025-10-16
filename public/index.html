@@ -1,0 +1,451 @@
+<!-- public/index.html -->
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Terminal Pro</title>
+
+  <!-- Base CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4/css/xterm.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Animate.css for entry/hover animations -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <style>
+    :root {
+      --bg: #0b0b0c;
+      --panel: #0f1113;
+      --muted: #8b8f92;
+      --accent: #00d084;
+      --accent-2: #00b37a;
+      --glass: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.04);
+      --shadow: 0 10px 30px rgba(2,6,23,0.7);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(0,0,0,0.6), transparent 8%),
+        radial-gradient(900px 450px at 90% 90%, rgba(10,10,12,0.7), transparent 6%),
+        var(--bg);
+      color: #e6eef2;
+      font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+    }
+
+    /* Pulsing logo */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(0,208,132,0.12), inset 0 -2px 6px rgba(255,255,255,0.02); }
+      50% { transform: scale(1.05); box-shadow: 0 8px 30px rgba(0,208,132,0.2), inset 0 -3px 8px rgba(255,255,255,0.03); }
+    }
+
+    /* App Frame */
+    .app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 20px;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .topbar-left, .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-badge {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+    .logo-badge i {
+      color: #071014;
+      font-size: 20px;
+    }
+    .title {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+    .title .main {
+      font-weight: 600;
+      font-size: 16px;
+      color: #f6fbfd;
+    }
+    .title .sub {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .title .sub i {
+      color: var(--accent);
+      animation: animate__animated animate__heartBeat animate__infinite;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 8px 12px;
+      border-radius: 9px;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 180ms ease;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.45);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(255,255,255,0.01));
+    }
+    .btn.ghost {
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.03);
+      background: transparent;
+    }
+
+    /* Status */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 9px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border: 1px solid rgba(255,255,255,0.02);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      box-shadow: 0 6px 16px rgba(0,208,132,0.18);
+      animation: blink 1.8s infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* Workspace */
+    .workspace {
+      display: flex;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Right panel */
+    .right-panel {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .terminal-card {
+      flex: 1;
+      background: linear-gradient(180deg, rgba(8,8,10,0.9), rgba(14,14,16,0.95));
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 20px 60px rgba(2,6,23,0.6);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      animation: animate__animated animate__zoomIn;
+    }
+    .terminal-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+    .window-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .dot.close { background: linear-gradient(180deg,#ff7b7b,#ff5252) }
+    .dot.min   { background: linear-gradient(180deg,#ffd27a,#ffb84d) }
+    .dot.max   { background: linear-gradient(180deg,#7ef3b2,#2ad58a) }
+
+    /* Terminal Tabs */
+    .terminal-tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      padding: 0 8px;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      background: rgba(255,255,255,0.01);
+      border: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      color: var(--muted);
+      padding: 8px 18px;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 150ms ease;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+    .tab-btn:hover {
+      background: rgba(255,255,255,0.04);
+      color: #e6eef2;
+    }
+    .tab-btn.active {
+      background: transparent;
+      border-color: rgba(255,255,255,0.02);
+      border-top: 2px solid var(--accent);
+      border-bottom: 1px solid transparent;
+      padding-top: 7px;
+      color: #f6fbfd;
+      font-weight: 500;
+    }
+    .add-tab-btn {
+      border: 1px dashed rgba(255,255,255,0.1);
+      background: transparent;
+      color: var(--muted);
+      font-weight: bold;
+      font-size: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      padding: 0;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    .add-tab-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: scale(1.05);
+    }
+    .close-tab-btn {
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      opacity: 0.5;
+      transition: all 150ms ease;
+    }
+    .tab-btn:hover .close-tab-btn {
+      opacity: 1;
+    }
+    .close-tab-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    /* Xterm area */
+    #terminal {
+      flex: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.02);
+      border-top-left-radius: 0;
+    }
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .foot-shortcuts {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .kbd {
+      background: rgba(255,255,255,0.02);
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.02);
+      color: #dff8ed;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      body {
+        overflow-x: hidden;
+      }
+      .app { padding: 14px; gap: 14px; }
+
+      .topbar {
+        flex-wrap: wrap;
+      }
+      .topbar-right {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      
+      .title .main { font-size: 15px; }
+      .title .sub { display: none; }
+      .logo-badge { width: 44px; height: 44px; }
+      
+      .controls .btn span {
+        display: none;
+      }
+      .controls .btn {
+        padding: 8px 10px;
+      }
+      
+      .shell-info {
+        display: none;
+      }
+
+      .foot {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .foot .foot-shortcuts {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Top bar / Brand -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="brand">
+          <div class="logo-badge">
+            <i class="fas fa-server"></i>
+          </div>
+          <div class="title">
+            <div class="main">Terminal Pro</div>
+            <div class="sub">
+              <i class="fas fa-code-branch"></i>
+              <span>Multi-Session Enabled</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection status + buttons -->
+      <div class="topbar-right">
+        <div class="status">
+          <div class="status-dot" id="status-dot"></div>
+          <div id="status-text">Đang kết nối...</div>
+        </div>
+        <div class="controls">
+          <button class="btn ghost" onclick="toggleFullscreen()" title="Chế độ toàn màn hình">
+            <i class="fas fa-expand"></i> <span>Toàn màn hình</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main workspace -->
+    <div class="workspace">
+      <main class="right-panel">
+        <section class="terminal-card" aria-label="Terminal">
+          <div class="terminal-top">
+            <div class="window-controls">
+              <div class="dot close"></div>
+              <div class="dot min"></div>
+              <div class="dot max"></div>
+            </div>
+            <div style="margin-left:12px;font-weight:600;color:#dff8ef">Terminal</div>
+            <div class="shell-info" style="margin-left:auto;color:var(--muted);font-size:13px">Shell: bash · UTF-8</div>
+          </div>
+          <div class="terminal-tabs" id="terminal-tabs-container">
+              <!-- Tabs will be rendered by JS -->
+          </div>
+          <div id="terminal"></div>
+          <div style="height:8px"></div>
+          <div class="foot">
+            <div class="foot-shortcuts">
+              <div class="kbd">Ctrl + C</div>
+              <div class="kbd">Ctrl + L</div>
+              <div style="color:var(--muted);font-size:13px">Dùng phím tắt để thao tác nhanh</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm@4/lib/xterm.js"></script>
+  <script src="client.js"></script>
+  <script>
+    function toggleFullscreen() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        document.documentElement.requestFullscreen();
+      }
+    }
+  </script>
+</body>
+</html>
