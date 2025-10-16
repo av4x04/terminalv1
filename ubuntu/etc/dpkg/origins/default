@@ -1,1 +1,4 @@
-ubuntu
+Vendor: Ubuntu
+Vendor-URL: http://www.ubuntu.com/
+Bugs: https://bugs.launchpad.net/ubuntu/+filebug
+Parent: Debian
